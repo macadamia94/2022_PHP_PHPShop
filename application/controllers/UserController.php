@@ -12,6 +12,12 @@ class UserController extends Controller
       $this->flash(_LOGINUSER, $result);
       return [_RESULT => $result];
     }
-    return [_RESULT => $result];
+    return [_RESULT => 0];
+  }
+
+  public function logout()
+  {
+    $this->flash(_LOGINUSER);
+    return [_RESULT => 1];
   }
 }
