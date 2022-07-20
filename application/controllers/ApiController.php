@@ -67,7 +67,8 @@ class ApiController extends Controller
     return [_RESULT => $result ? 1 : 0];
   }
 
-  public function productImageList() {
+  public function productImageList()
+  {
     $urlPaths = getUrlPaths();
     if (!isset($urlPaths[2])) {
       exit();
@@ -77,5 +78,30 @@ class ApiController extends Controller
       "product_id" => $productId
     ];
     return $this->model->productImageList($param);
+  }
+
+  public function productImageDelete()
+  {
+    $urlPaths = getUrlPaths();
+    if (count($urlPaths) !== 6) {
+      exit();
+    }
+    $result = 0;
+    switch (getMethod()) {
+      case _DELETE:
+        //이미지 파일 삭제 
+        $product_img_id = intval($urlPaths[2]);
+        $product_id = intval($urlPaths[3]);
+        $type = intval($urlPaths[4]);
+        $path = $urlPaths[5];
+
+        $imgPath = _IMG_PATH . "/" . $product_id . "/" . $type . "/" . $path;
+        if (unlink($imgPath)) {
+          $param = ["product_image_id" => $product_img_id];
+          $result = $this->model->productImageDelete($param);
+        }
+        break;
+    }
+    return [_RESULT => $result];
   }
 }
