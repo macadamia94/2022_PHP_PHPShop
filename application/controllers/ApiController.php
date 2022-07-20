@@ -36,25 +36,46 @@ class ApiController extends Controller
 
   public function upload()
   {
-    $urlPaths = getUrlPaths();
+    $urlPaths = getUrlPaths(); // getUrlPaths → UrlUtils에 있음 ('/' 단위로 쪼갬)
     if (!isset($urlPaths[2]) || !isset($urlPaths[3])) {
       exit();
     }
     $productId = intval($urlPaths[2]);
     $type = intval($urlPaths[3]);
-    $json = getJson();
+    $json = getJson();  // $json : 배열
     $image_parts = explode(";base64", $json["image"]);
     $image_type_aux = explode("image/", $image_parts[0]);
     $image_type = $image_type_aux[1];
-    $image_base64 = base64_decode($image_parts[1]);
+    $image_base64 = base64_decode($image_parts[1]); // 문자열로 인코딩한 이미지를 디코딩해서 이미지로 돌림
     $dirPath = _IMG_PATH . "/" . $productId . "/" . $type;
-    $filePath = $dirPath . "/" . uniqid() . "." . $image_type;
+    // $randomPath = uniqid();
+    // $filePath = $dirPath . "/" . $randomPath . "." . $image_type;
+    $filePath = $dirPath . "/" . uniqid() . "." . $image_type;  // uniqid() : 특정한 문자열을 만들어줌
     if (!is_dir($dirPath)) {
       mkdir($dirPath, 0777, true);
     }
-    //$file = _IMG_PATH . "/" . $productId . "/" . $type . "/" . uniqid() . "." . $image_type;
-    //$file = "static/" . uniqid() . "." . $image_type;
     $result = file_put_contents($filePath, $image_base64);
-    return [_RESULT => 1];
+    if ($result) {
+      $param = [
+        "product_id" => $productId,
+        "type" => $type,
+        // "path" => $randomPath . "." . $image_type
+        "path" => end(explode("/", $filePath))
+      ];
+      $this->model->productImageInsert($param);
+    }
+    return [_RESULT => $result ? 1 : 0];
+  }
+
+  public function productImageList() {
+    $urlPaths = getUrlPaths();
+    if (!isset($urlPaths[2])) {
+      exit();
+    }
+    $productId = intval($urlPaths[2]);
+    $param = [
+      "product_id" => $productId
+    ];
+    return $this->model->productImageList($param);
   }
 }
