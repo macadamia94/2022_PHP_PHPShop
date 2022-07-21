@@ -18,10 +18,14 @@ class ApiController extends Controller
     return [_RESULT => $this->model->productInsert($json)];
   }
 
+  public function productList()
+  {
+    return $this->model->productList();
+  }
+
   public function productList2()
   {
-    $result = $this->model->productList2();
-    return $result === false ? [] : $result;
+    return $this->model->productList2();
   }
 
   public function productDetail()
