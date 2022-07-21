@@ -2,6 +2,8 @@
 
 namespace application\controllers;
 
+use Exception;
+
 class ApiController extends Controller
 {
   public function categoryList()
@@ -103,5 +105,36 @@ class ApiController extends Controller
         break;
     }
     return [_RESULT => $result];
+  }
+
+  public function deleteProduct()
+  {
+    $urlPaths = getUrlPaths();
+    if (count($urlPaths) !== 3) {
+      exit();
+    }
+    $productId = intval($urlPaths[2]);
+
+    try {
+      $param = [
+        "product_id" => $productId
+      ];
+      $this->model->beginTransaction();
+      $this->model->productImageDelete($param);
+      $result = $this->model->productDelete($param);
+      if ($result === 1) {
+        //이미지 삭제
+        rmdirAll(_IMG_PATH . "/" . $productId);
+        $this->model->commit();
+      } else {
+        $this->model->rollback();
+      }
+    } catch (Exception $e) {
+      print "에러발생<br>";
+      print $e . "<br>";
+      $this->model->rollback();
+    }
+
+    return [_RESULT => 1];
   }
 }
